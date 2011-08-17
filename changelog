@@ -1,7 +1,12 @@
 This is the changelog file for IDLfftw3. The version numbers are in the Ubuntu
 version numbering scheme.
 
-5.12 First supposedly working release.
+ 5.12 [Paco López Dekker]
+      - First supposedly working release.
 
-6.01 BUGFIX: LAZY Keyword was being ignored, instead LAZY keyword was
-     yielding an inverse transform.
+ 6.01 [Paco López Dekker]
+      - BUGFIX: LAZY keyword was being ignored. Instead, LAZY keyword was
+        yielding an inverse transform.
+
+11.08 [Gordon Farquharson]
+      - Convert code to a Dynamically Loadable Module (DLM).

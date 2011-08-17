@@ -28,15 +28,13 @@ Using this package requires following the FFTW philosophy:
 
 \subsection{Loading the library}
 
-The IDL function
+The library is configured as a Dynamically Loadable Module (DLM). To use the DLM, put \texttt{IDLfftw3.dlm} and \texttt{IDLfftw3.so} in a directory which is listed in \texttt{IDL\_DLM\_PATH} (or \texttt{!dlm\_path}). \texttt{IDL\_DLM\_PATH} can be set using the following command in IDL.
 \begin{verbatim}
-link_fftw
+PREF_SET, 'IDL_DLM_PATH', $
+          '/path/to/your/dlmdir:<IDL_DEFAULT>', $
+          /COMMIT
 \end{verbatim}
-links the wrapper functions from 
-\begin{verbatim}
-libIDLfftw.so
-\end{verbatim}
-This, of course, will only work if everything is in the right place, but if you are reading this you should be capable of dealing with it.
+The IDLfftw3 DLM will load automatically when any routines in IDLfftw3 are called from within IDL.
 
 \subsection{Creating a plan}
 
