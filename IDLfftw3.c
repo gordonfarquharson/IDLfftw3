@@ -541,3 +541,29 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 		}
 	}
 }
+
+int IDL_Load(void)
+{
+	/* These tables contain information on the functions and
+	 * procedures that make up the DLM. The information
+	 * contained in these tables must be identical to that
+	 * contained in the .dlm file.
+	 */
+	static IDL_SYSFUN_DEF2 function_addr[] = {
+		{ { idlfftw_plan }, 
+		  "IDLFFTW_PLAN", 1, 2, IDL_SYSFUN_DEF_F_KEYWORDS, 0 },
+	};
+	static IDL_SYSFUN_DEF2 procedure_addr[] = {
+		{ { (IDL_SYSRTN_GENERIC) idlfftw_delplan },
+		  "IDLFFTW_DELPLAN", 1, 1, 0, 0 },
+		{ { (IDL_SYSRTN_GENERIC) idlfftw },
+		  "IDLFFTW", 1, 3, IDL_SYSFUN_DEF_F_KEYWORDS, 0},
+	};
+
+	/* Register our routine. The routines must be specified
+	 * exactly the same as in testmodule.dlm. */
+	return IDL_SysRtnAdd(function_addr, TRUE, 
+			     IDL_CARRAY_ELTS(function_addr)) &&
+	       IDL_SysRtnAdd(procedure_addr, FALSE,
+		             IDL_CARRAY_ELTS(procedure_addr));
+}

@@ -6,13 +6,15 @@ LFLAGS = -lm -lfftw3f
 CFILES = IDLfftw3.c
 OFILES = IDLfftw3.o
 
-all:  	libIDLfftw.so
+TARGET = IDLfftw3.so
 
-libIDLfftw.so: $(OFILES) 
-	$(CC) -shared  $(CFLAGS) -o libIDLfftw.so $(OFILES) $(LFLAGS)
+all:  	$(TARGET)
+
+IDLfftw3.so: $(OFILES) 
+	$(CC) -shared  $(CFLAGS) -o $(TARGET) $(OFILES) $(LFLAGS)
 
 clean:
-	rm -f *.o libIDLfftw.so
+	rm -f $(OFILES) $(TARGET)
 
 distclean:
-	rm -f *.o *~ libIDLfftw.so
+	rm -f $(OFILES) $(TARGET) *~
