@@ -1,0 +1,105 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{times}
+
+\usepackage[top=1in,left=1.25in,right=1.25in,bottom=1in,headheight=15pt]{geometry}
+\usepackage{amsmath}
+
+\title{IDLFFTW3}
+\author{Paco López Dekker}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+This is a package allows one to use version 3.x of the FFTW library within IDL.
+
+\section{Usage}
+
+Using this package requires following the FFTW philosophy:
+\begin{enumerate}
+\item Create a plan.
+\item Execute your FFTs (supposedly many of the same kind, otherwise planning can be a waste of time and you could just use IDL's fft).
+\item Delete the plan when you are done.
+\end{enumerate}
+
+\subsection{Loading the library}
+
+The IDL function
+\begin{verbatim}
+link_fftw
+\end{verbatim}
+links the wrapper functions from 
+\begin{verbatim}
+libIDLfftw.so
+\end{verbatim}
+This, of course, will only work if everything is in the right place, but if you are reading this you should be capable of dealing with it.
+
+\subsection{Creating a plan}
+
+Creating the plan is most of the work. To create the plan use the function
+\begin{verbatim}
+plan = idlfftw_plan(in [,out, /C2R, DIMENSION=dim, $
+                    /INVERSE, /LAZY, /TEST, /VERBOSE])
+\end{verbatim}
+
+\subsubsection*{Parameters}
+
+\begin{description}
+\item[in] Is the input array. Can have up to 4 dimensions and must be of type complex or float. If \textbf{in} is of type float a real to complex DFT is planned (which has implications on the size of the required \textbf{out}), which is always a forward DFT.
+\item[out] Is the output array. If none present an in-place DFT is planned, although this is only allowed for a complex 2 complex DFT. For real to complex and complex to real transforms the size of \textbf{out} has to be as documented in the FFTW documentation (this requires some further explanation somewhere else).
+\end{description}
+
+\subsubsection*{Keywords}
+
+\begin{description}
+\item[C2R] If \textbf{in} is of type complex there is the option to calculate a complex to real transform (see the FFTW documentation for details). This is always an inverse DFT
+\item[DIMENSION] This allows to perform the DFT over one dimension of the array. Currently only the first (DIMENSION=1) and last dimensions are supported (all of them for a 2D array!).
+\item[INVERSE] Plans an inverse DFT (i it makes sense).
+\item[LAZY] This tells the plan to not use any specific memory alignment of the data. This may be the same thing to do if one wants to use the same plan for different (equally sized) arrays.
+\item[TEST] This performs the DFT after planning to see that it doesn't crash the computer. It is useless unless you are trying to prove that it is broken.
+\item[VERBOSE] Marginally useful to debug code.
+\end{description}
+
+
+\subsection{Executing the DFT}
+
+The DFT is performed using
+\begin{verbatim}
+idlfftw, plan, in [,out, /GURU]
+\end{verbatim}
+In principle, all information needed to execute the FFTW is stored in the plan. The only reason to pass the input and output array is so that the function can check that the memory footprint of the arrays matches the plan requirement (it just checks for location and size in physical memory).
+
+\subsubsection*{Keywords}
+
+\begin{description}
+\item[GURU] This allows using different arrays than the ones used by the planner (dimensions still need to match). If not set the function requires that \textbf{in} and \textbf{out} be the same as used by the planner. 
+\end{description}
+
+\subsection{Deleting a plan}
+
+Deleting a plan is easiest and should be done to avoid memory leaking. Execute
+\begin{verbatim}
+idlfftw_delplan, plan
+\end{verbatim} 
+You should delete a plan without assigning a new plan to the same variable
+
+\section{Performance}
+
+With 1024x512 point complex DFTs this package appears between $4$ and $5.5$ times faster than IDL's FFTW. Interestingly, the LAZY-GURU mode gives the fastest results, although this makes no sense.
+
+\section{Known Bugs}
+
+There are not yet know bugs, but it is likely that using this functions will break everything in your computer.
+
+\section{TODO}
+
+\begin{enumerate}
+\item Implement multi-threaded FFTs (should be pretty straightforward).
+\item Implement function to clean all plans.
+\end{enumerate}
+
+\end{document}

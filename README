@@ -1,0 +1,9 @@
+IDLfftw3 wrapper for using FFTW 3.x in IDL. The code includes a
+general purpose planner function idlfftw_plan, and procedures to
+execute a plan (idlfftw_execute) and delete a plan (idlfftw_delplan).
+
+This code was inspired by FFTW2IDL by Andreas Reigber.
+
+For more information about FFTW, please see
+
+   http://www.fftw.org/

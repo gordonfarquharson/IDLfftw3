@@ -1,0 +1,7 @@
+This is the changelog file for IDLfftw3. The version numbers are in the Ubuntu
+version numbering scheme.
+
+5.12 First supposedly working release.
+
+6.01 BUGFIX: LAZY Keyword was being ignored, instead LAZY keyword was
+     yielding an inverse transform.
