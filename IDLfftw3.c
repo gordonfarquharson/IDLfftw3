@@ -34,6 +34,14 @@
 
 #define PLAN_INFO_LENGTH 9
 
+#ifdef  _x64_
+#define IDL_MACHINEULONG IDL_ULONG64
+#define IDL_TYP_MACHINEULONG IDL_TYP_LONG64 
+#else
+#define IDL_MACHINEULONG IDL_ULONG
+#define IDL_TYP_MACHINEULONG IDL_TYP_LONG
+#endif 
+
 IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 {
 	IDL_VPTR datain, dataout = NULL, IDL_plan;
@@ -45,7 +53,7 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 	   store the pointer as an unsigned long, this may not scale to
 	   64-bit machines. This may be a mistake though */
 	fftwf_plan plan = 0;
-	IDL_ULONG *planinfo;
+	IDL_MACHINEULONG *planinfo;
 
 	/* Stuff used for keyword processing */
 	typedef struct {
@@ -100,9 +108,9 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 	IDL_KW_FREE;
 
 	planinfo =
-	    (IDL_ULONG *) IDL_MakeTempVector(IDL_TYP_ULONG,
-					     (IDL_MEMINT) PLAN_INFO_LENGTH,
-					     IDL_ARR_INI_ZERO, &IDL_plan);
+		(IDL_MACHINEULONG *) IDL_MakeTempVector(IDL_TYP_MACHINEULONG,
+							(IDL_MEMINT) PLAN_INFO_LENGTH,
+							IDL_ARR_INI_ZERO, &IDL_plan);
 
 	datain = argv[0];
 	IDL_ENSURE_ARRAY(datain);
@@ -334,20 +342,20 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 	if (fftw_test)
 		fftwf_execute(plan);
 
-	/* Now it is time to pupulate the planinfo array */
+	/* Now it is time to populate the planinfo array */
 	{
-		planinfo[0] = (IDL_ULONG) plan;	/*  This is the plan */
+		planinfo[0] = (IDL_MACHINEULONG) plan;	/*  This is the plan */
 		if (argc == 1) {
 			planinfo[1] = 1;
-			planinfo[2] = (IDL_ULONG) datain->value.arr->data;	/* A pointer to the first array; */
-			planinfo[3] = (IDL_ULONG) datain->value.arr->arr_len;	/* Physical size o the array in bytes.
+			planinfo[2] = (IDL_MACHINEULONG) datain->value.arr->data;	/* A pointer to the first array; */
+			planinfo[3] = (IDL_MACHINEULONG) datain->value.arr->arr_len;	/* Physical size o the array in bytes.
 										   This is useful to prevent segfaults, I hope */
 		} else {
 			planinfo[1] = 2;
-			planinfo[2] = (IDL_ULONG) datain->value.arr->data;	/* A pointer to the first array; */
-			planinfo[3] = (IDL_ULONG) datain->value.arr->arr_len;
-			planinfo[4] = (IDL_ULONG) dataout->value.arr->data;	/* A pointer to the first array; */
-			planinfo[5] = (IDL_ULONG) dataout->value.arr->arr_len;
+			planinfo[2] = (IDL_MACHINEULONG) datain->value.arr->data;	/* A pointer to the first array; */
+			planinfo[3] = (IDL_MACHINEULONG) datain->value.arr->arr_len;
+			planinfo[4] = (IDL_MACHINEULONG) dataout->value.arr->data;	/* A pointer to the first array; */
+			planinfo[5] = (IDL_MACHINEULONG) dataout->value.arr->arr_len;
 		}
 		planinfo[6] = 13579;	/* these two are useless, but I will use them to check that it is a plan */
 		planinfo[7] = 2468;
@@ -360,16 +368,16 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 int idlfftw_checkplan(IDL_VPTR IDL_plan)
 {
 	int badplan = 0;
-	IDL_ULONG *planinfo;
+	IDL_MACHINEULONG *planinfo;
 
 	IDL_ENSURE_ARRAY(IDL_plan);
 
-	if (IDL_plan->type != IDL_TYP_ULONG)
+	if (IDL_plan->type != IDL_TYP_MACHINEULONG)
 		badplan = 1;
 	if (IDL_plan->value.arr->n_elts != PLAN_INFO_LENGTH)
 		badplan = 2;
 	if (badplan != 1) {
-		planinfo = (IDL_ULONG *) IDL_plan->value.arr->data;
+		planinfo = (IDL_MACHINEULONG *) IDL_plan->value.arr->data;
 		if ((planinfo[6] != 13579) || (planinfo[7] != 2468)
 		    || (planinfo[0] == 0))
 			badplan = 3;
@@ -381,7 +389,7 @@ void idlfftw_delplan(int argc, IDL_VPTR argv[])
 {
 	IDL_VPTR IDL_plan;
 	fftwf_plan plan;
-	IDL_ULONG *planinfo;
+	IDL_MACHINEULONG *planinfo;
 	IDL_plan = argv[0];
 	int error;
 
@@ -394,7 +402,7 @@ void idlfftw_delplan(int argc, IDL_VPTR argv[])
 			error);
 		IDL_Message(IDL_M_GENERIC, IDL_MSG_LONGJMP, error_msg);
 	}
-	planinfo = (IDL_ULONG *) IDL_plan->value.arr->data;
+	planinfo = (IDL_MACHINEULONG *) IDL_plan->value.arr->data;
 	plan = (fftwf_plan) planinfo[0];
 	fftwf_destroy_plan(plan);
 	/* Now a very basic security measure to identify it as a
@@ -406,7 +414,7 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 {
 	IDL_VPTR IDL_plan, IDL_in, IDL_out = NULL;
 	fftwf_plan plan;
-	IDL_ULONG *planinfo, fftw_type;
+	IDL_MACHINEULONG *planinfo, fftw_type;
 	int bad_data = 0, gurumode = 0;
 	int error;
 
@@ -440,7 +448,7 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 			error);
 		IDL_Message(IDL_M_GENERIC, IDL_MSG_LONGJMP, error_msg);
 	}
-	planinfo = (IDL_ULONG *) IDL_plan->value.arr->data;
+	planinfo = (IDL_MACHINEULONG *) IDL_plan->value.arr->data;
 	if (gurumode == 0) {
 		/* This is how I think it should be done, just use the
 		   same arrays as where given to the planner */
@@ -449,10 +457,10 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 		   the right size */
 		{
 			IDL_ENSURE_ARRAY(IDL_in);
-			if (planinfo[2] != (IDL_ULONG) IDL_in->value.arr->data)
+			if (planinfo[2] != (IDL_MACHINEULONG) IDL_in->value.arr->data)
 				bad_data = 1;	/* A pointer to the first array; */
 			if (planinfo[3] !=
-			    (IDL_ULONG) IDL_in->value.arr->arr_len)
+			    (IDL_MACHINEULONG) IDL_in->value.arr->arr_len)
 				bad_data = 1;	/* Physical size o the array in bytes. */
 		}
 
@@ -461,10 +469,10 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 			IDL_ENSURE_ARRAY(IDL_out);
 			if (planinfo[1] != 2)
 				bad_data = 1;
-			if (planinfo[4] != (IDL_ULONG) IDL_out->value.arr->data)
+			if (planinfo[4] != (IDL_MACHINEULONG) IDL_out->value.arr->data)
 				bad_data = 1;	/* A pointer to the first array; */
 			if (planinfo[5] !=
-			    (IDL_ULONG) IDL_out->value.arr->arr_len)
+			    (IDL_MACHINEULONG) IDL_out->value.arr->arr_len)
 				bad_data = 1;	/* Physical size o the array in bytes. */
 		} else {
 			if (planinfo[1] != 1)
@@ -487,7 +495,7 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 		{
 			IDL_ENSURE_ARRAY(IDL_in);
 			if (planinfo[3] !=
-			    (IDL_ULONG) IDL_in->value.arr->arr_len)
+			    (IDL_MACHINEULONG) IDL_in->value.arr->arr_len)
 				bad_data = 1;	/* Physical size o the array in bytes. */
 		}
 		if (argc > 2) {
@@ -496,7 +504,7 @@ void idlfftw(int argc, IDL_VPTR argv[], char *argk)
 			if (planinfo[1] != 2)
 				bad_data = 1;
 			if (planinfo[5] !=
-			    (IDL_ULONG) IDL_out->value.arr->arr_len)
+			    (IDL_MACHINEULONG) IDL_out->value.arr->arr_len)
 				bad_data = 1;	/* Physical size o the array in bytes. */
 		} else {
 			if (planinfo[1] != 1)

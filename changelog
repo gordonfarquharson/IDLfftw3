@@ -10,3 +10,6 @@ version numbering scheme.
 
 11.08 [Gordon Farquharson]
       - Convert code to a Dynamically Loadable Module (DLM).
+
+      [Paco López Dekker]
+      - Handle 64 bit pointers.
