@@ -1,6 +1,7 @@
 CC = gcc
 CINCLUDE = -I /usr/local/itt/idl/idl81/external/include
-CFLAGS = -O2 -fPIC -Wall $(CINCLUDE)
+DEFS = -D _x64_
+CFLAGS = -O2 -fPIC -Wall $(DEFS) $(CINCLUDE)
 LFLAGS = -lm -lfftw3f
 
 CFILES = IDLfftw3.c
