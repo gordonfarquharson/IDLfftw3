@@ -64,6 +64,7 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 		IDL_LONG lazy;
 		IDL_LONG fftw_test;
 		IDL_LONG verbose;
+	        IDL_LONG rank;
 	} KW_RESULT;
 	static IDL_KW_PAR kw_pars[] = {
 		{"C2R", IDL_TYP_LONG, 1, IDL_KW_ZERO,
@@ -74,6 +75,8 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 		 0, IDL_KW_OFFSETOF(fftw_backward)},
 		{"LAZY", IDL_TYP_LONG, 1, IDL_KW_ZERO,
 		 0, IDL_KW_OFFSETOF(lazy)},
+		{"RANK", IDL_TYP_LONG, 1, IDL_KW_ZERO,  
+		  0, IDL_KW_OFFSETOF(rank)},
 		{"TEST", IDL_TYP_LONG, 1, IDL_KW_ZERO,
 		 0, IDL_KW_OFFSETOF(fftw_test)},
 		{"VERBOSE", IDL_TYP_LONG, 1, IDL_KW_ZERO,
@@ -84,10 +87,13 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 
 	/* Execution flags */
 	unsigned verbose = 0,
-	    fftw_dir = FFTW_FORWARD,
-	    fftw_dimension = 0,
-	    fftw_type = IDL_FFTW_NONE,
-	    fftw_c2r = 0, fftw_test = 0, planner_flag = FFTW_MEASURE;
+		 fftw_dir = FFTW_FORWARD,
+		 fftw_dimension = 0,
+		 fftw_type = IDL_FFTW_NONE,
+		 fftw_c2r = 0,
+		 fftw_test = 0,
+		 planner_flag = FFTW_MEASURE;
+	unsigned rank = 0;
 
 	/* Keyword processing */
 	argc = IDL_KWProcessByOffset(argc, argv, argk, kw_pars, NULL, 1, &kw);
@@ -103,6 +109,8 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 		verbose = 1;
 		IDL_Message(IDL_M_GENERIC, IDL_MSG_INFO, "Verbose.");
 	}
+	if (kw.rank)
+		rank = kw.rank;
 	if (kw.c2r)
 		fftw_c2r = 1;
 	IDL_KW_FREE;
@@ -302,10 +310,37 @@ IDL_VPTR idlfftw_plan(int argc, IDL_VPTR argv[], char *argk)
 					    "Second argument should have same size as first argument.\n");
 			c_out = (fftwf_complex *) dataout->value.arr->data;
 		}
-		if (fftw_dimension == 0) {
+		if ((fftw_dimension == 0) && (rank == 0)) {
 			plan =
 			    fftwf_plan_dft(ndim, dims, c_in, c_out, fftw_dir,
 					   planner_flag);
+		} else if ((rank > 0) && (rank <= ndim)) {
+			int howmany;
+			int istride, idist;
+			int rank_it;
+			fftw_dimension = 1;
+			howmany = (int)(datain->value.arr->n_elts);
+			for (rank_it = 0; rank_it < rank; rank_it++)
+				howmany =
+					howmany / dims[ndim - fftw_dimension -
+						rank_it];
+			if (verbose) {
+				sprintf(infomessage, "Will do %i FFTs.\n",
+					howmany);
+				IDL_Message(IDL_M_GENERIC, IDL_MSG_INFO,
+					    infomessage);
+			}
+			istride = 1;
+			idist = 1;
+			for (rank_it = 0; rank_it < rank; rank_it++)
+				idist =
+					idist * dims[ndim - fftw_dimension -
+                                                rank_it];
+			plan =
+				fftwf_plan_many_dft(rank, &(dims[ndim - rank]),
+						    howmany, c_in, NULL, istride,
+						    idist, c_out, NULL, istride,
+						    idist, fftw_dir, planner_flag);
 		} else {
 			int howmany;
 			int istride, idist;
