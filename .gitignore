@@ -1,0 +1,10 @@
+*.log
+*.aux
+*.make
+*.temp
+*.d
+*.fls
+*.o
+*.pdf
+*.so
+*~
