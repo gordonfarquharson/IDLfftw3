@@ -14,3 +14,4 @@ version numbering scheme.
       [Paco López Dekker]
       - Handle 64 bit pointers.
       - Add RANK keyword.
+      - Improve IDL test routine.
